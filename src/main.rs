@@ -18,19 +18,18 @@ async fn main() {
 
     let client = shaco::rest::RESTClient::new().expect("Failed to create client.");
 
-    let mut amount = args.amount;
-    if amount > 200 {
+    let mut endIndex = args.amount - 1;
+    if endIndex > 199 {
         println!("A maximum of 200 games can be fetched, fetching 200.");
-        amount = 200;
+        endIndex = 199;
     }
-    let endpoint = format!("/lol-match-history/v1/products/lol/current-summoner/matches?endIndex={amount}");
+    let endpoint = format!("/lol-match-history/v1/products/lol/current-summoner/matches?endIndex={endIndex}");
 
     let matches: LolMatchHistoryMatchHistoryList = serde_json::from_value(
         client
             .get(endpoint.to_string())
             .await
             .expect("Failed to fetch from endpoint.")
-            .clone()
     ).expect("Failed to deserialize match list json");
 
     for match_history in matches.games.games {
@@ -42,7 +41,6 @@ async fn main() {
                     .get(endpoint.to_string())
                     .await
                     .expect("Failed to fetch from endpoint.")
-                    .clone()
             ).expect("Failed to deserialize match history json");
             if full_match_history.participantIdentities.len() == 10 {
                 let full_match_history_string = serde_json::to_string(&full_match_history).expect("Failed to serialize json");
